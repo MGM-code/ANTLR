@@ -38,6 +38,8 @@ DST  : '!=';
 OR   : '||' ;
 AND  : '&&' ;
 NOT  : '!'  ;
+
+// Palabras reservadas 
 RETURN : 'return';
 
 // Cierre
@@ -71,12 +73,12 @@ WS : [ \n\t\r]+ -> skip;
 OTRO : . ;
 
 // Programa
-programa : { System.out.println("\n\n -->INICIO<--"); } instruccion  { System.out.println("\n\n -->FIN<--"); } ;
+programa : { System.out.println("\n\n -->INICIO<--"); } instrucciones{ System.out.println("\n\n -->FIN<--"); } ;
 
 
 // Instrucciones 
 instrucciones : instruccion instrucciones
-              //| bloque instrucciones
+              | bloque instrucciones
               |
               ;
 
@@ -86,12 +88,12 @@ instruccion : declaracion PYC
             | asignacion PYC
             | ciclowhile
             | ciclofor
-            | condif
+            | condif 
             | declaracion_funcion PYC
             | funcion
             | llamada_funcion PYC
             | bloque
-           // | opal PYC
+            | opal PYC
             ;
 
 asignacion : ID ASIGN opal ;
@@ -165,6 +167,9 @@ llamada_funcion : ID PARA argumentos PARC
 
 argumentos: ID argumentos
           | COMA argumentos
+          | ENTERO argumentos
+          | DECIMAL argumentos
+          | CARACTER argumentos
           |
           ;
 
