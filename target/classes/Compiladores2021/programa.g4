@@ -170,13 +170,3 @@ argumentos: ID argumentos
 
 declaracion_funcion : tipodato ID PARA prototipo PARC
                     ;
-// declaracion -> int x; int suma(int , int);
-//                double y;
-//                int z = 0;
-//                double w, q, t;
-//                int a = 5, b, c = 10;
-
-// asignacion -> x = 1;
-//               z = y;
-
-// iwhile -> while (x comp y) { instrucciones }
