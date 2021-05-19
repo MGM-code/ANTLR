@@ -1,8 +1,8 @@
 grammar programa;
 
-@header {
-package Compiladores2021;
-}
+//@header {
+//package Compiladores2021;
+//}
 
 fragment LETRA : [A-Za-z] ;
 fragment DIGITO : [0-9] ;
@@ -16,7 +16,9 @@ PARC : ')' ;
 
 //Operaciones
 MAS : '+' ;
+INCR : '++';
 MENOS : '-' ;
+DECR : '--';
 MULT: '*' ;
 DIV : '/' ;
 MOD  : '%' ;
@@ -36,9 +38,11 @@ DST  : '!=';
 OR   : '||' ;
 AND  : '&&' ;
 NOT  : '!'  ;
+RETURN : 'return';
 
 // Cierre
 PYC : ';' ;
+COMA : ',' ;
 
 // Tipos de datos
 INT     : 'int' ;
@@ -57,6 +61,7 @@ ELSE : 'else' ;
 // Numeros
 ENTERO : DIGITO+;
 DECIMAL : ENTERO'.'ENTERO;
+CARACTER: '\''LETRA'\'';
 
 // Variables
 ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
@@ -66,12 +71,12 @@ WS : [ \n\t\r]+ -> skip;
 OTRO : . ;
 
 // Programa
-programa : { System.out.println("\n\n -->INICIO<--"); } instrucciones  { System.out.println("\n\n -->FIN<--"); } ;
+programa : { System.out.println("\n\n -->INICIO<--"); } instruccion  { System.out.println("\n\n -->FIN<--"); } ;
 
 
 // Instrucciones 
 instrucciones : instruccion instrucciones
-              | bloque instrucciones
+              //| bloque instrucciones
               |
               ;
 
@@ -79,12 +84,14 @@ bloque : LLAVEA instrucciones LLAVEC ;
 
 instruccion : declaracion PYC
             | asignacion PYC
-           // | ciclofor
-           // | ciclowhile
-           // | condif
-           // | funcion
-           // | llamada_funcion PYC
+            | ciclowhile
+            | ciclofor
+            | condif
+            | declaracion_funcion PYC
+            | funcion
+            | llamada_funcion PYC
             | bloque
+           // | opal PYC
             ;
 
 asignacion : ID ASIGN opal ;
@@ -97,8 +104,15 @@ opal : exp ;
 
 exp : term e ;
 
-e : MAS   term e
+e : MAS term e
   | MENOS term e
+  | MEN term e
+  | INCR 
+  | DECR
+  | MENEQ term e
+  | MAYEQ term e
+  | EQL term e
+  | DST term e
   |
   ;
 
@@ -120,8 +134,43 @@ tipodato : INT
          | VOID
          ;
 
+// Bucles
+ciclofor : FOR PARA tipodato asignacion PYC opal PYC opal e PARC instrucciones
+         ;
 
-// declaracion -> int x;
+ciclowhile : WHILE PARA opal e PARC instrucciones
+           ;
+
+// Sentencia if else
+condif : IF PARA opal e PARC instrucciones
+       | IF PARA opal e PARC instruccion ELSE instruccion
+       ;
+
+// Funciones
+funcion : tipodato ID PARA parametros PARC bloque
+        ;
+
+parametros :  declaracion parametros
+           |  COMA parametros
+           |
+           ;
+
+prototipo : tipodato prototipo
+          | COMA prototipo
+          |
+          ;
+
+llamada_funcion : ID PARA argumentos PARC
+                ;
+
+argumentos: ID argumentos
+          | COMA argumentos
+          |
+          ;
+
+declaracion_funcion : tipodato ID PARA prototipo PARC
+                    ;
+// declaracion -> int x; int suma(int , int);
 //                double y;
 //                int z = 0;
 //                double w, q, t;
