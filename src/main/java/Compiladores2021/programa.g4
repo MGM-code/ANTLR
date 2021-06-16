@@ -4,130 +4,158 @@ grammar programa;
 package Compiladores2021;
 }
 
-fragment LETRA : [A-Za-z] ;
-fragment DIGITO : [0-9] ;
+
+@members {
+    String tipovariable="";
+    Funciones funciones= new Funciones();
+    String nombreVariable=null;
+    Object valor=null;
+    String variableAsignada=null;
+}
 
 
-//Llaves y parentesis
-LLAVEA : '{' ;
-LLAVEC : '}' ;
-PARA : '(' ;
-PARC : ')' ;
+fragment LETRA : [A-Za-z]; //palabras
+fragment DIGITO : [0-9]; //numeros
+fragment MAYUSCULA : [A-Z];
 
-//Operaciones
-MAS : '+' ;
-MENOS : '-' ;
-MULT: '*' ;
-DIV : '/' ;
-MOD  : '%' ;
+PA : '(';
+PC : ')';
+LA : '{';
+LC : '}';
+CA : '[';
+CC : ']';
 
-//Asignación
-ASIGN : '=' ;
+PYC : ';';
+EQ : '=';
+COMA : ',';
+COMILLA: '"';
 
-// Comparaciones 
-MAY  : '>' ;
-MAYEQ: '>=';
-MEN  : '<' ;
-MENEQ: '<=';
-EQL  : '==';
-DST  : '!=';
+INT : 'int ';
+CHAR :'char ';
+DOUBLE : 'double ';
+FLOAT : 'float ';
+VOID: 'void ';
+RETURN: 'return ';
 
-// Operaciones logicas
-OR   : '||' ;
-AND  : '&&' ;
-NOT  : '!'  ;
+FOR: 'for';
+IF : 'if';
+ELSE: 'else';
+WHILE: 'while';
 
-// Cierre
-PYC : ';' ;
+SUM: '+';
+RESTA: '-';
+MULT: '*';
+DIV: '/';
+RESTO: '%';
 
-// Tipos de datos
-INT     : 'int' ;
-CHAR    : 'char' ;
-DOUBLE  : 'double' ;
-VOID    : 'void' ;
+//---------Operadores relacionales-------
+COMP: ('<'|'>'|'<='|'>='|'!='|'==');            
 
-// Bucles
-WHILE : 'while' ;
-FOR  : 'for';
+//---------Operadores logicos------------
+LOGIC : ('&'|'&&'|'|');              
 
-// Condición
-IF   : 'if' ;
-ELSE : 'else' ;
-
-// Numeros
-ENTERO : DIGITO+;
-DECIMAL : ENTERO'.'ENTERO;
-
-// Variables
-ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
-
-// Otros
-WS : [ \n\t\r]+ -> skip;
-OTRO : . ;
-
-// Programa
-programa : { System.out.println("\n\n -->INICIO<--"); } instrucciones  { System.out.println("\n\n -->FIN<--"); } ;
+INC_DEC: ( '++' | '--'); 
 
 
-// Instrucciones 
-instrucciones : instruccion instrucciones
-              | bloque instrucciones
-              |
-              ;
+ID : (LETRA | '_')(LETRA | DIGITO | '_')*;
+NUMERO : DIGITO+;
+FLOTANTE: DIGITO+'.'DIGITO+;
+LETRAMAYUSCULA : MAYUSCULA;
 
-bloque : LLAVEA instrucciones LLAVEC ;
 
-instruccion : declaracion PYC
-            | asignacion PYC
-           // | ciclofor
-           // | ciclowhile
-           // | condif
-           // | funcion
-           // | llamada_funcion PYC
-            | bloque
+HORA: (('0'[0-2] | '1'[0-9] | '2'[0-3])':'([0-5][0-9]));
+FECHA: (('0'[1-9] | '1'[0-9] | '2'[0-9]| '30')'/'(('0'[1-9]) | ('1'[1-2]))'/'([0-9][0-9][0-9][0-9])) ;
+EMAIL : (ID | [A-z]) '@' ID '.com';
+COMENTARIO : ('/*'(LETRA*DIGITO*)'*/');
+
+
+WS : [ \n\t\r] -> skip; 
+
+OTRO : . ; 
+
+prog : instrucciones+
+     ;
+
+instrucciones: (operacion | estructuras)
+             ;
+
+operacion : declaracion PYC
+          | ID asignacion PYC { funciones.asignacion($ID.getText(),null,tipovariable); } 
+          | RETURN ID PYC
+          ;
+
+declaracion : tipodato ID asignacion { funciones.agregarVarialble($ID.getText(),tipovariable); funciones.asignacion($ID.getText(),valor,null); }
+            | tipodato ID { funciones.agregarVarialble($ID.getText(),tipovariable); }
             ;
 
-asignacion : ID ASIGN opal ;
-
-declaracion : tipodato ID
-            | tipodato ID asignacion
-            ;
-
-opal : exp ;
-
-exp : term e ;
-
-e : MAS   term e
-  | MENOS term e
-  |
-  ;
-
-term : factor t;
-
-t : MULT factor t
-  | DIV  factor t
-  |
-  ;
-
-factor : ID
-       | ENTERO
-       | PARA exp PARC
-       ;
-
-tipodato : INT
-         | CHAR
-         | DOUBLE
-         | VOID
+tipodato : INT {tipovariable="int";}
+         | DOUBLE {tipovariable="double";}
+         | FLOAT {tipovariable="float";}
+         | CHAR {tipovariable="char";}
          ;
 
+tipoaritmetica : SUM
+               | RESTA
+               | MULT
+               | DIV
+               | RESTO
+               ;
 
-// declaracion -> int x;
-//                double y;
-//                int z = 0;
-//                double w, q, t;
-//                int a = 5, b, c = 10;
+tipologica : COMP 
+           | LOGIC
+           ;
 
-// asignacion -> x = 1;
-//               z = y;
+asignacion : EQ valor 
+           | EQ ID { tipovariable=funciones.getTipo($ID.getText()); }
+           | EQ op_aritmetica
+           | INC_DEC
+           ;
 
-// iwhile -> while (x comp y) { instrucciones }
+
+valor: NUMERO  { valor = Integer.parseInt($NUMERO.getText());}
+     | FLOTANTE { valor = Float.parseFloat($FLOTANTE.getText());}
+     | COMILLA ID COMILLA { valor = $ID.getText(); } //Se toma "ID" como una palabra
+     | ID { valor = Integer.parseInt($ID.getText());}
+     | llamada_funcion
+     ;
+
+op_aritmetica : (valor tipoaritmetica)+ valor
+              ;
+              
+op_logica : (valor tipologica)+ valor
+          ;
+
+tipo_funcion : tipodato
+             | VOID {tipovariable="void";}
+             ;
+
+dec_funcion : tipo_funcion ID PA PC bloque_instruccion 
+            | tipo_funcion ID PA (dec_parametros) PC bloque_instruccion 
+            ;
+
+llamada_funcion :  ID PA PC { tipovariable=funciones.getTipo($ID.getText()); }
+                |  ID PA (dec_parametros) PC { tipovariable=funciones.getTipo($ID.getText()); }
+                ;
+
+dec_parametros : (tipodato ID COMA)* tipodato ID
+               ;
+
+estructuras : ciclo_for
+            | ciclo_while
+            | condicion_if
+            | dec_funcion
+            ;
+
+ciclo_for : FOR PA declaracion PYC op_logica PYC ID asignacion PC bloque_instruccion
+          ;
+
+bloque_instruccion: LA (instrucciones)+ LC
+                  ;
+
+
+ciclo_while : WHILE PA op_logica PC bloque_instruccion
+            ;
+
+condicion_if : IF PA op_logica PC bloque_instruccion
+             | IF PA op_logica PC bloque_instruccion ELSE bloque_instruccion
+             ;

@@ -1,7 +1,8 @@
-int suma (int, int);
 
 int suma (int a, int b){
-    a + b;
+   int c;
+   int c;
+   int c = a + b
+   
+    return c;
 }
-
-suma (1 , 2);
