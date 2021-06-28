@@ -10,7 +10,7 @@ public class App {
         // create a CharStream that reads from file
         // CharStream input = CharStreams.fromFileName("src/entrada.txt");
         // CharStream input = CharStreams.fromFileName("src/llaves.txt");
-        CharStream input = CharStreams.fromFileName("src/asignaciones.txt");
+        CharStream input = CharStreams.fromFileName("src/codigo.txt");
 
         // create a lexer that feeds off of input CharStream
         programaLexer lexer = new programaLexer(input);
@@ -30,6 +30,15 @@ public class App {
         // Solicito al parser que comience indicando una regla gramatical
         // En este caso la regla es el simbolo inicial
         // parser.s();
+
+        Compiladores2021.TablaSimbolos.ErroresListener erroresListener = new Compiladores2021.TablaSimbolos.ErroresListener();
+        parser.removeErrorListeners();
+        parser.addErrorListener(erroresListener);
+
+        programaBaseListener listener = new MiListener();
+        parser.addParseListener(listener);
+
+
         ParseTree tree =  parser.programa();
         System.out.println(tree);
     }

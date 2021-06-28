@@ -1,134 +1,105 @@
 grammar programa;
 
-//@header {
-//package Compiladores2021;
-//}
+@header {
+package Compiladores2021;
+}
 
-fragment LETRA : [A-Za-z] ;
-fragment DIGITO : [0-9] ;
+@members {
+    String tipovariable="";
+    Funciones funciones= new Funciones();
+    String nombreVariable=null;
+    Object valor=null;
+    String variableAsignada=null;
+}
 
 
-//Llaves y parentesis
-LLAVEA : '{' ;
-LLAVEC : '}' ;
-PARA : '(' ;
-PARC : ')' ;
+fragment LETRA : [A-Za-z]; //palabras
+fragment DIGITO : [0-9]; //ENTEROs
+fragment MAYUSCULA : [A-Z];
 
-//Operaciones
-MAS : '+' ;
-INCR : '++';
-MENOS : '-' ;
-DECR : '--';
-MULT: '*' ;
-DIV : '/' ;
-MOD  : '%' ;
+PA : '(';
+PC : ')';
+LA : '{';
+LC : '}';
+CA : '[';
+CC : ']';
 
-//Asignación
-ASIGN : '=' ;
+PYC : ';';
+EQ : '=';
+COMA : ',';
+COMILLA: '"';
 
-// Comparaciones 
-MAY  : '>' ;
-MAYEQ: '>=';
-MEN  : '<' ;
-MENEQ: '<=';
-EQL  : '==';
-DST  : '!=';
+INT : 'int ';
+CHAR :'char ';
+DOUBLE : 'double ';
+FLOAT : 'float ';
+VOID: 'void ';
+RETURN: 'return ';
 
-// Operaciones logicas
-OR   : '||' ;
-AND  : '&&' ;
-NOT  : '!'  ;
+FOR: 'for';
+IF : 'if';
+ELSE: 'else';
+WHILE: 'while';
 
-// Palabras reservadas 
-RETURN : 'return';
+SUM: '+';
+RESTA: '-';
+MULT: '*';
+DIV: '/';
+RESTO: '%';
 
-// Cierre
-PYC : ';' ;
-COMA : ',' ;
+MEN  : '<' ;  
+MENEQ: '<=';  
+EQL  : '==';  
+MAY  : '>' ;  
+MAYEQ: '>=';  
+DST  : '!=';  
 
-// Tipos de datos
-INT     : 'int' ;
-CHAR    : 'char' ;
-DOUBLE  : 'double' ;
-VOID    : 'void' ;
+OR   : '||' ;  
+AND  : '&&' ;  
+NOT  : '!'  ;  
 
-// Bucles
-WHILE : 'while' ;
-FOR  : 'for';
+INC_DEC: ( '++' | '--'); 
 
-// Condición
-IF   : 'if' ;
-ELSE : 'else' ;
 
-// Numeros
+ID : (LETRA | '_')(LETRA | DIGITO | '_')*;
 ENTERO : DIGITO+;
-DECIMAL : ENTERO'.'ENTERO;
+DECIMAL: ENTERO'.'ENTERO;
 CARACTER: '\''LETRA'\'';
-
-// Variables
-ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
-
-// Otros
-WS : [ \n\t\r]+ -> skip;
-OTRO : . ;
-
-// Programa
-programa : { System.out.println("\n\n -->INICIO<--"); } instrucciones{ System.out.println("\n\n -->FIN<--"); } ;
+LETRAMAYUSCULA : MAYUSCULA;
 
 
-// Instrucciones 
-instrucciones : instruccion instrucciones
-              | bloque instrucciones
+WS : [ \n\t\r] -> skip; 
+
+OTRO : . ; 
+
+programa: instrucciones ; 
+
+instrucciones : instruccion instrucciones 
               |
               ;
 
-bloque : LLAVEA instrucciones LLAVEC ;
+bloque : LA instrucciones LC 
+       ;
 
 instruccion : declaracion PYC
             | asignacion PYC
-            | ciclowhile
             | ciclofor
-            | condif 
-            | declaracion_funcion PYC
+            | ciclowhile
+            | condif
             | funcion
             | llamada_funcion PYC
             | bloque
-            | opal PYC
             ;
 
-asignacion : ID ASIGN opal ;
+retorno : RETURN opal;
 
 declaracion : tipodato ID
-            | tipodato ID asignacion
+            | tipodato ID asign
             ;
 
-opal : exp ;
-
-exp : term e ;
-
-e : MAS term e
-  | MENOS term e
-  | MEN term e
-  | INCR 
-  | DECR
-  | MENEQ term e
-  | MAYEQ term e
-  | EQL term e
-  | DST term e
-  |
-  ;
-
-term : factor t;
-
-t : MULT factor t
-  | DIV  factor t
-  |
-  ;
-
-factor : ID
-       | ENTERO
-       | PARA exp PARC
-       ;
+asign : EQ llamada_funcion
+      | EQ operacion
+      ;
 
 tipodato : INT
          | CHAR
@@ -136,20 +107,20 @@ tipodato : INT
          | VOID
          ;
 
-// Bucles
-ciclofor : FOR PARA tipodato asignacion PYC opal PYC opal e PARC instrucciones
+asignacion  : ID asign
+            ;
+
+ciclofor : FOR PA asignacion PYC operacion PYC ID asign PC instruccion
          ;
 
-ciclowhile : WHILE PARA opal e PARC instrucciones
+ciclowhile : WHILE PA operacion PC instruccion
            ;
 
-// Sentencia if else
-condif : IF PARA opal e PARC instrucciones
-       | IF PARA opal e PARC instruccion ELSE instruccion
+condif : IF PA operacion PC instruccion
+       | IF PA operacion PC instruccion ELSE instruccion
        ;
 
-// Funciones
-funcion : tipodato ID PARA parametros PARC bloque
+funcion : tipodato ID PA parametros PC bloque
         ;
 
 parametros :  declaracion parametros
@@ -157,21 +128,73 @@ parametros :  declaracion parametros
            |
            ;
 
-prototipo : tipodato prototipo
-          | COMA prototipo
-          |
-          ;
-
-llamada_funcion : ID PARA argumentos PARC
+llamada_funcion : ID PA argumentos PC
                 ;
 
 argumentos: ID argumentos
           | COMA argumentos
-          | ENTERO argumentos
-          | DECIMAL argumentos
-          | CARACTER argumentos
           |
           ;
 
-declaracion_funcion : tipodato ID PARA prototipo PARC
-                    ;
+operacion : opal ;
+
+opal : disyuncion 
+     |
+     ;
+
+disyuncion : conjuncion disy
+           ;
+
+disy : OR conjuncion disy
+     |
+     ;
+
+conjuncion : comparaciones conj
+           ;
+
+conj : AND comparaciones conj
+     |
+     ;
+
+comparaciones : expresion comp
+              ;
+
+comp : opcomp expresion comp
+     |
+     ;
+
+opcomp : EQL
+       | DST
+       | MAY
+       | MAYEQ
+       | MEN
+       | MENEQ
+       ;
+
+expresion : termino exp;
+
+exp : SUM termino exp
+    | RESTA termino exp
+    |
+    ;
+
+termino : factor term ;
+
+term : MULT factor term
+     | DIV factor term
+     | RESTO factor term
+     |
+     ;
+
+factor : f PA opal PC
+       | f ENTERO
+       | f DECIMAL
+       | f CARACTER
+       | f ID
+       ;
+
+f : SUM
+  | RESTA
+  | NOT
+  |
+  ;

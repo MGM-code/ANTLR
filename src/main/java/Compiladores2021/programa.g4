@@ -4,115 +4,102 @@ grammar programa;
 package Compiladores2021;
 }
 
-fragment LETRA : [A-Za-z] ;
-fragment DIGITO : [0-9] ;
+@members {
+    String tipovariable="";
+    Funciones funciones= new Funciones();
+    String nombreVariable=null;
+    Object valor=null;
+    String variableAsignada=null;
+}
 
 
-//Llaves y parentesis
-LLAVEA : '{' ;
-LLAVEC : '}' ;
-PARA : '(' ;
-PARC : ')' ;
+fragment LETRA : [A-Za-z]; //palabras
+fragment DIGITO : [0-9]; //ENTEROs
+fragment MAYUSCULA : [A-Z];
 
-//Operaciones
-MAS : '+' ;
-MENOS : '-' ;
-MULT: '*' ;
-DIV : '/' ;
-MOD  : '%' ;
+PA : '(';
+PC : ')';
+LA : '{';
+LC : '}';
+CA : '[';
+CC : ']';
 
-//Asignación
-ASIGN : '=' ;
+PYC : ';';
+EQ : '=';
+COMA : ',';
+COMILLA: '"';
 
-// Comparaciones 
-MAY  : '>' ;
-MAYEQ: '>=';
-MEN  : '<' ;
-MENEQ: '<=';
-EQL  : '==';
-DST  : '!=';
+INT : 'int ';
+CHAR :'char ';
+DOUBLE : 'double ';
+FLOAT : 'float ';
+VOID: 'void ';
+RETURN: 'return ';
 
-// Operaciones logicas
-OR   : '||' ;
-AND  : '&&' ;
-NOT  : '!'  ;
+FOR: 'for';
+IF : 'if';
+ELSE: 'else';
+WHILE: 'while';
 
-// Cierre
-PYC : ';' ;
+SUM: '+';
+RESTA: '-';
+MULT: '*';
+DIV: '/';
+RESTO: '%';
 
-// Tipos de datos
-INT     : 'int' ;
-CHAR    : 'char' ;
-DOUBLE  : 'double' ;
-VOID    : 'void' ;
+MEN  : '<' ;  
+MENEQ: '<=';  
+EQL  : '==';  
+MAY  : '>' ;  
+MAYEQ: '>=';  
+DST  : '!=';  
 
-// Bucles
-WHILE : 'while' ;
-FOR  : 'for';
+OR   : '||' ;  
+AND  : '&&' ;  
+NOT  : '!'  ;  
 
-// Condición
-IF   : 'if' ;
-ELSE : 'else' ;
+INC_DEC: ( '++' | '--'); 
 
-// Numeros
+
+ID : (LETRA | '_')(LETRA | DIGITO | '_')*;
 ENTERO : DIGITO+;
-DECIMAL : ENTERO'.'ENTERO;
-
-// Variables
-ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
-
-// Otros
-WS : [ \n\t\r]+ -> skip;
-OTRO : . ;
-
-// Programa
-programa : { System.out.println("\n\n -->INICIO<--"); } instrucciones  { System.out.println("\n\n -->FIN<--"); } ;
+DECIMAL: ENTERO'.'ENTERO;
+CARACTER: '\''LETRA'\'';
+LETRAMAYUSCULA : MAYUSCULA;
 
 
-// Instrucciones 
-instrucciones : instruccion instrucciones
-              | bloque instrucciones
+WS : [ \n\t\r] -> skip; 
+
+OTRO : . ; 
+
+programa: instrucciones ; 
+
+instrucciones : instruccion instrucciones 
               |
               ;
 
-bloque : LLAVEA instrucciones LLAVEC ;
+bloque : LA instrucciones LC 
+       ;
 
 instruccion : declaracion PYC
             | asignacion PYC
-           // | ciclofor
-           // | ciclowhile
-           // | condif
-           // | funcion
-           // | llamada_funcion PYC
+            | ciclofor
+            | ciclowhile
+            | condif
+            | funcion
+            | llamada_funcion PYC
             | bloque
             ;
 
-asignacion : ID ASIGN opal ;
+retorno : RETURN opal;
 
 declaracion : tipodato ID
-            | tipodato ID asignacion
+            | tipodato ID asign
             ;
 
-opal : exp ;
-
-exp : term e ;
-
-e : MAS   term e
-  | MENOS term e
-  |
-  ;
-
-term : factor t;
-
-t : MULT factor t
-  | DIV  factor t
-  |
-  ;
-
-factor : ID
-       | ENTERO
-       | PARA exp PARC
-       ;
+asign : EQ llamada_funcion
+      | EQ operacion
+      ;
 
 tipodato : INT
          | CHAR
@@ -120,14 +107,94 @@ tipodato : INT
          | VOID
          ;
 
+asignacion  : ID asign
+            ;
 
-// declaracion -> int x;
-//                double y;
-//                int z = 0;
-//                double w, q, t;
-//                int a = 5, b, c = 10;
+ciclofor : FOR PA asignacion PYC operacion PYC ID asign PC instruccion
+         ;
 
-// asignacion -> x = 1;
-//               z = y;
+ciclowhile : WHILE PA operacion PC instruccion
+           ;
 
-// iwhile -> while (x comp y) { instrucciones }
+condif : IF PA operacion PC instruccion
+       | IF PA operacion PC instruccion ELSE instruccion
+       ;
+
+funcion : tipodato ID PA parametros PC bloque
+        ;
+
+parametros :  declaracion parametros
+           |  COMA parametros
+           |
+           ;
+
+llamada_funcion : ID PA argumentos PC
+                ;
+
+argumentos: ID argumentos
+          | COMA argumentos
+          |
+          ;
+
+operacion : opal ;
+
+opal : disyuncion 
+     |
+     ;
+
+disyuncion : conjuncion disy
+           ;
+
+disy : OR conjuncion disy
+     |
+     ;
+
+conjuncion : comparaciones conj
+           ;
+
+conj : AND comparaciones conj
+     |
+     ;
+
+comparaciones : expresion comp
+              ;
+
+comp : opcomp expresion comp
+     |
+     ;
+
+opcomp : EQL
+       | DST
+       | MAY
+       | MAYEQ
+       | MEN
+       | MENEQ
+       ;
+
+expresion : termino exp;
+
+exp : SUM termino exp
+    | RESTA termino exp
+    |
+    ;
+
+termino : factor term ;
+
+term : MULT factor term
+     | DIV factor term
+     | RESTO factor term
+     |
+     ;
+
+factor : f PA opal PC
+       | f ENTERO
+       | f DECIMAL
+       | f CARACTER
+       | f ID
+       ;
+
+f : SUM
+  | RESTA
+  | NOT
+  |
+  ;
