@@ -25,9 +25,7 @@ public class MiListener extends programaBaseListener {
     private TablaDeSimbolos simbolos = new TablaDeSimbolos();
     private CustomErrores errors = new CustomErrores();
 
-    /*****************************************************************
-     *************************Private Methods*************************
-     *****************************************************************/
+    /*Private Methods*/
 
     private String positionToken(Token token){
         return "[" + token.getLine() + ":" + token.getCharPositionInLine() + "]";
@@ -59,7 +57,6 @@ public class MiListener extends programaBaseListener {
 
     private boolean isFunction(Id id){ return id instanceof Funcion; }
 
-    /* Buscar factores, ecxepto argumentos de la funcion */
     private Collection<ParseTree> findFactorsWithoutArguments(ParseTree ctx){
         Collection<ParseTree> factors = Trees.findAllRuleNodes(ctx, programaParser.RULE_factor);
         Collection<ParseTree> callsFunction = Trees.findAllRuleNodes(ctx, programaParser.RULE_llamada_funcion);
@@ -71,7 +68,7 @@ public class MiListener extends programaBaseListener {
         return factors;
     }
     
-    /* Verificar que no existan parametros iguales en la definicion o declaracion de una funcion */
+
     private boolean containsParameter(List<Variable> parameters, String nameVar){
         return parameters.stream()
                          .filter(param -> param.getTokenNombre().equals(nameVar))
@@ -79,7 +76,6 @@ public class MiListener extends programaBaseListener {
                          .isPresent();
     }
 
-    /* Obtener parametros de una funcion */
     private List<Variable> getParameters(ParametrosContext ctx){
         List<Variable> params = new ArrayList<Variable>();
         Collection<ParseTree> parameters = Trees.findAllRuleNodes(ctx, programaParser.RULE_declaracion);
@@ -95,7 +91,6 @@ public class MiListener extends programaBaseListener {
         return params;
     }
 
-    /* Analizar cada factor de una operacion */
     private boolean processFactors(Id caller, String dataType, Collection<ParseTree> factors) {
         FactorContext fc;
         boolean error = true;
@@ -134,7 +129,7 @@ public class MiListener extends programaBaseListener {
         return error;
     }
 
-    /* Procesar instruccion asignacion */
+
     private void processAssignment(AsignacionContext ctx) {
         Id id = getID(ctx.ID().getText());
         if (id != null) {
@@ -145,7 +140,6 @@ public class MiListener extends programaBaseListener {
             errors.idNotDeclared(positionToken(ctx.getStart()), ctx.ID().getText());
     }
 
-    /* Procesar instruccion declaracion */
     private void processDeclaration(DeclaracionContext ctx) {
         Collection<ParseTree> factors = findFactorsWithoutArguments(ctx);
         if (getIDLocal(ctx.ID().getText()) == null) {
@@ -161,7 +155,6 @@ public class MiListener extends programaBaseListener {
         }
     }
 
-    /* Procesar declaracion de funcion */
     private Id processFunction(FuncionContext ctx){
         Id id = getIDLocal(ctx.ID().getText());
         if(id == null){
@@ -185,7 +178,6 @@ public class MiListener extends programaBaseListener {
         return null;
     }
 
-    /* Procesar llamada a funcion */
     private void processCallfunction(String dataType, Object object){
         Id id = getID(((DeclaracionContext) object).ID().getText());
         Collection<ParseTree> operations = Trees.findAllRuleNodes((ParseTree) object, programaParser.RULE_operacion);
@@ -218,7 +210,6 @@ public class MiListener extends programaBaseListener {
             errors.declaredAsVariable(positionToken(((ParserRuleContext) object).getStart()), id.getTokenNombre());
     }
 
-    /* Procesar instruccion return o validar su omision */
     private void processReturn(FuncionContext ctx){
         Collection<ParseTree> returns = Trees.findAllRuleNodes(ctx, programaParser.RULE_retorno);
         if(ctx.tipodato().getText().equals("void") && returns.size() != 0)
@@ -232,9 +223,7 @@ public class MiListener extends programaBaseListener {
         }
     }
 
-    /*****************************************************************
-     ************************Override Methods*************************
-     *****************************************************************/
+    /*Override Methods*/
 
     @Override
     public void enterPrograma(ProgramaContext ctx) {
@@ -320,20 +309,4 @@ public class MiListener extends programaBaseListener {
         //System.out.println(simbolos);
     } 
 
-    // @Override
-    // public void exitDeclaration(DeclarationContext ctx) {
-    //     if(!ctx.getStop().getText().equals(";")){
-    //         MyToken token = new MyToken(reglasLexer.PYC, ";");
-
-    //         ctx.addErrorNode(new ErrorNodeImpl((Token) token));
-
-
-    //     }
-    // }
-
-    // @Override
-    // public void visitErrorNode(ErrorNode node) {
-    //     System.out.println("ERROR -> " + node.getText());
-    //     super.visitErrorNode(node);
-    // }
 }

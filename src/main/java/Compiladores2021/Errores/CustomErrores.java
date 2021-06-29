@@ -2,10 +2,6 @@ package Compiladores2021.Errores;
 
 import java.util.ArrayList;
 
-/*
-    Esta clase nos permite visualizar todos los errores y advertencias necesarias
-    si alguna regla sintactica no se cumple o mas bien hay un error semantico
-*/
 public class CustomErrores {
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";

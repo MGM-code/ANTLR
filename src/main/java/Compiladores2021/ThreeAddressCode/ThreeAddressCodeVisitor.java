@@ -16,21 +16,17 @@ import Compiladores2021.programaBaseVisitor;
 import Compiladores2021.programaParser;
 import Compiladores2021.programaParser.*;
 
-/**
- * Esta clase es un visitor que luego de que el arbol queda parseado recorrera
- * el mismo para poder escribir un codigo de 3 direcciones
- */
 
 public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
-    // Contador de labels
+    // Contador labels
     private int countLbl;
-    // Contador de temporales
+    // Contador temporales
     private int countTmp;
-    // Concatena el resultado final
+    // Concatenaresultado final
     private String result;
-    // Almacena el temporal anterior
+    // Almacena temporal anterior
     private String previousTemp;
-    // Almacena el temporal actual
+    // Almacena temporal actual
     private String currentTemp;
 
     public ThreeAddressCodeVisitor() {
@@ -86,7 +82,7 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         if (ctx.ELSE() == null) {
             visitChildren(ctx);
         } else {
-            // bloque if
+           
             visitBloque((BloqueContext) ctx.getChild(4));
 
             int aux = countLbl;
@@ -94,7 +90,7 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
             result += String.format("jmp L%s\n", countLbl);
             result += String.format("label L%s\n", aux);
 
-            // bloque else
+           
             visitBloque((BloqueContext) ctx.getChild(6));
         }
         result += String.format("label L%s\n", countLbl);
@@ -178,33 +174,19 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         return "";
     }
 
-    /**
-     * Obtengo un subarbol en formato ArrayList segun la regla que especifiquemos
-     */
     private List<ParseTree> findRuleNodes(ParseTree ctx, int ruleIndex) {
         return new ArrayList<ParseTree>(Trees.findAllRuleNodes(ctx, ruleIndex));
     }
-
-    /**
-     * Muestro el codigo de tres direcciones por pantalla
-     */
     public void getResult() {
         System.out.println(result);
     }
 
-    /**
-     * Concatena los temporales anteriores y actuales pasandole la operacion que hay
-     * en el medio
-     */
     private void concatTemps(String operation) {
         result += String.format("t%d = %s %s %s \n", countTmp, previousTemp, operation, currentTemp);
         currentTemp = "t" + countTmp;
         countTmp++;
     }
 
-    /**
-     * Obtengo todas las reglas sin tener en cuanta las que son opal
-     */
     public void findRuleNodesWithoutOpal(ParseTree t, int index, List<ParseTree> nodes) {
         if (t instanceof ParserRuleContext) {
             ParserRuleContext ctx = (ParserRuleContext) t;
@@ -219,9 +201,7 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         }
     }
 
-    /**
-     * Usa el String con el resultado concatenado para almacenarlo en un archivo
-     */
+
     public void generateCode() {
         try {
             PrintWriter out;
@@ -233,12 +213,6 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         }
     }
     
-    /**
-     * Si los terminos son menos que dos y los mismos son sumple entonces
-     * solo se imprime ya que el codigo de tres direcciones admite 
-     * una asignacion o declaracion de esta forma: y = 7 + x, entonces no tenemos
-     * la necesidad de analizar todos los terminos
-     */
     private void lessThanTWo(List<ParseTree> ruleFactors){
         for (ParseTree parseTree : ruleFactors) {
             FactorContext fc = ((FactorContext)parseTree);
@@ -252,11 +226,6 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         }
     }
 
-    /**
-     * Esta funcion es llamada recursivamente para procesar las conjunciones
-     * y de esta forma ir agregando los temporales al codigo intermedio de acuerdo
-     * a la operacion que involucra 
-     */
     private void processConjunctions(OpalContext ctx) {
         List<ParseTree> conjunctions = new ArrayList<ParseTree>();
         findRuleNodesWithoutOpal(ctx, programaParser.RULE_conjuncion, conjunctions);
@@ -271,11 +240,7 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         }
     }
 
-    /**
-     * Esta funcion es llamada recursivamente para procesar las comparaciones
-     * y de esta forma ir agregando los temporales al codigo intermedio de acuerdo
-     * a la operacion que involucra 
-     */
+
     private void processComparisons(ConjuncionContext ctx) {
         List<ParseTree> comparisons = new ArrayList<ParseTree>();
         findRuleNodesWithoutOpal(ctx, programaParser.RULE_comparaciones, comparisons);
@@ -290,11 +255,7 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         }
     }
 
-    /**
-     * Esta funcion es llamada recursivamente para procesar las expresiones
-     * y de esta forma ir agregando los temporales al codigo intermedio de acuerdo
-     * a la operacion que involucra 
-     */
+
     private void processExpressions(ComparacionesContext ctx) {
         List<ParseTree> exps = new ArrayList<ParseTree>();
         findRuleNodesWithoutOpal(ctx, programaParser.RULE_exp, exps);
@@ -309,11 +270,6 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         }
     }
 
-    /**
-     * Esta funcion genera los temporales en cada termino, verifica que foma
-     * tiene el termino (si son id, conjuciones o una funcion) y apartir de alli
-     * mueve los temporales previos y actuales
-     */
     private void generateTempsInTerm(Collection<ParseTree> factors) {
         List<ParseTree> factorsLocal = new ArrayList<ParseTree>(factors);
         String temp;
@@ -337,10 +293,6 @@ public class ThreeAddressCodeVisitor extends programaBaseVisitor<String>{
         }
     }
 
-    /**
-     * Procesa cada uno de los terminos verificando el tamaño de cada uno y concatenando
-     * los temporales y llamando a la funcion que genera los mismo generateTempsInTerm()
-     */
     private void processTerms(ExpContext ctx) {
         List<ParseTree> ruleTerms = new ArrayList<ParseTree>();
         findRuleNodesWithoutOpal(ctx, programaParser.RULE_term, ruleTerms);
