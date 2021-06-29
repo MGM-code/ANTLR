@@ -13,7 +13,7 @@
             // Archivo a parsear
             "input": "src/asignaciones.txt",
             // Simbolo inicial
-            "startRule": "prog",
+            "startRule": "programa",
             // Muestra Arbol Sintactico
             "printParseTree": true,
             "visualParseTree": true
