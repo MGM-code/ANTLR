@@ -2,8 +2,6 @@ package Compiladores2021.TablaSimbolos;
 
 import org.antlr.runtime.CommonToken;
 
-import org.antlr.runtime.CommonToken;
-
 public class MiToken extends CommonToken{
 
     private static final long serialVersionUID = 1L;

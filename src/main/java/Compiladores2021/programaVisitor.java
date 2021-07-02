@@ -1,4 +1,4 @@
-// Generated from d:\Usuarios\Nicolas\Escritorio\REPO\ANTLR\src\main\java\Compiladores2021\programa.g4 by ANTLR 4.8
+// Generated from d:\Usuarios\Nicolas\Escritorio\repo\ANTLR\src\main\java\Compiladores2021\programa.g4 by ANTLR 4.8
 
 package Compiladores2021;
 
